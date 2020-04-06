@@ -13,14 +13,13 @@ class  Home extends React.Component{
         };
     }
 
-    onLoadPokemons() {
-        axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${this.state.currentPage * 20}`)
-            .then((response) => {
-                this.setState({
-                    pokemonsCount: response.data.count,
-                    pokemons: response.data.results
-                });
-            })
+    async onLoadPokemons() {
+        const { count, results } = (await axios.get(`https://pokeapi.co/api/v2/pokemon?offset=${this.state.currentPage * 20}`)).data;
+        const pokemons = (await Promise.all(results.map(result => axios.get(result.url)))).map(result => result.data);
+        this.setState({
+            pokemonsCount: count,
+            pokemons
+        });
     }
 
     onNextPage() {
@@ -93,7 +92,7 @@ class  Home extends React.Component{
                     <p>Prop 4</p>
                 </div>
                 {pokemons.map((pokemon) =>
-                    <Pokemon key={pokemon.url} pokemon={pokemon} />
+                    <Pokemon key={pokemon.id} pokemon={pokemon} />
                 )}
                 <div className="pagination">
                     <button onClick={() => this.onPrevPage()}>Prev</button>
